@@ -3,6 +3,10 @@ name: Build multi-arch image
 on:
   workflow_call:
     inputs:
+      name:
+        description: 'Name of the service to build (used for job names only).'
+        required: true
+        type: string
       version:
         description: 'The version build matrix as an escaped JSON string.'
         required: true
@@ -25,10 +29,10 @@ jobs:
   # JOB 1: CONFIGURE
   # -----------------------------------------------------------------------------------------------
   configure:
-    name: Configure Build
+    name: Configure
     runs-on: ubuntu-latest
     outputs:
-      can_login: ${{ steps.checksecret_job.outputs.is_MY_SECRET_set }}
+      can_login: ${{ steps.check_secrets.outputs.can_login }}
     steps:
       - name: Eval login and push
         id: check_secrets
@@ -79,6 +83,10 @@ jobs:
         id: tag
         uses: cytopia/docker-tag-action@v0.4.7
 
+      - name: "[SETUP] Determine Docker login"
+        run: |
+          echo ${{ needs.configure.outputs.can_login }}
+
       # ------------------------------------------------------------
       # Build
       # ------------------------------------------------------------
@@ -105,11 +113,11 @@ jobs:
         with:
           username: ${{ secrets.dockerhub_username }}
           password: ${{ secrets.dockerhub_password }}
-        if: needs.configure.outputs.can_login == '1'
+        if: needs.configure.outputs.can_login == 1
 
       - name: Docker push architecture image
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
             make push-arch TAG=${{ steps.tag.outputs.docker-tag }} ARCH=${{ matrix.arch }}
-        if: needs.configure.outputs.can_login == '1'
+        if: ${{ needs.configure.outputs.can_login == '1' }}
