@@ -1,0 +1,115 @@
+name: Build multi-arch image
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'The version build matrix as an escaped JSON string.'
+        required: true
+        type: string
+      arch:
+        description: 'The architecture build matrix as an escaped JSON string.'
+        required: true
+        type: string
+    secrets:
+      dockerhub_username:
+        description: 'The username for Dockerhub.'
+        required: false
+      dockerhub_password:
+        description: 'The password for Dockerhub.'
+        required: false
+
+jobs:
+
+  # -----------------------------------------------------------------------------------------------
+  # JOB 1: CONFIGURE
+  # -----------------------------------------------------------------------------------------------
+  configure:
+    name: Configure Build
+    runs-on: ubuntu-latest
+    outputs:
+      can_login: ${{ steps.checksecret_job.outputs.is_MY_SECRET_set }}
+    steps:
+      - name: Eval login and push
+        id: check_secrets
+        env:
+          ENV_USER: ${{ secrets.dockerhub_username }}
+          ENV_PASS: ${{ secrets.dockerhub_password }}
+        shell: bash
+        run: |
+          if [ "${{ env.USER }}" = '' ] || [ "${{ env.PASS }}" = '' ]; then
+            echo "::set-output name=can_login::0"
+            echo "can_login=0"
+          else
+            echo "::set-output name=can_login::1"
+            echo "can_login=1"
+          fi
+
+  # -----------------------------------------------------------------------------------------------
+  # JOB 2: BUILD
+  # -----------------------------------------------------------------------------------------------
+  build:
+    needs: [configure]
+    name: Build ${{ input.name }}-${{ matrix.version }} (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - ${{ fromJson(input.version) }}
+        arch:
+          - ${{ fromJson(input.arch) }}
+    steps:
+
+      # ------------------------------------------------------------
+      # Setup repository
+      # ------------------------------------------------------------
+      - name: "[SETUP] Checkout repository"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: "[SETUP] Setup QEMU environment"
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+
+      - name: "[SETUP] Determine Docker tag"
+        id: tag
+        uses: cytopia/docker-tag-action@v0.4.7
+
+      # ------------------------------------------------------------
+      # Build
+      # ------------------------------------------------------------
+      - name: Build
+        uses: cytopia/shell-command-retry-action@v0.1.2
+        with:
+          command: |
+            make build ARCH=${{ matrix.arch }}
+
+      # ------------------------------------------------------------
+      # Test
+      # ------------------------------------------------------------
+      - name: Test
+        uses: cytopia/shell-command-retry-action@v0.1.2
+        with:
+          command: |
+            make test ARCH=${{ matrix.arch }}
+
+      # ------------------------------------------------------------
+      # Deploy
+      # ------------------------------------------------------------
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.dockerhub_username }}
+          password: ${{ secrets.dockerhub_password }}
+        if: needs.configure.outputs.can_login == '1'
+
+      - name: Docker push architecture image
+        uses: cytopia/shell-command-retry-action@v0.1.2
+        with:
+          command: |
+            make push-arch TAG=${{ steps.tag.outputs.docker-tag }} ARCH=${{ matrix.arch }}
+        if: needs.configure.outputs.can_login == '1'
