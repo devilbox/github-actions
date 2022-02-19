@@ -37,7 +37,7 @@ jobs:
           ENV_PASS: ${{ secrets.dockerhub_password }}
         shell: bash
         run: |
-          if [ "${{ env.USER }}" = '' ] || [ "${{ env.PASS }}" = '' ]; then
+          if [ "${{ env.ENV_USER }}" = '' ] || [ "${{ env.ENV_PASS }}" = '' ]; then
             echo "::set-output name=can_login::0"
             echo "can_login=0"
           else
@@ -50,15 +50,15 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   build:
     needs: [configure]
-    name: Build ${{ input.name }}-${{ matrix.version }} (${{ matrix.arch }})
+    name: Build ${{ inputs.name }}-${{ matrix.version }} (${{ matrix.arch }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         version:
-          - ${{ fromJson(input.version) }}
+          - ${{ fromJson(inputs.version) }}
         arch:
-          - ${{ fromJson(input.arch) }}
+          - ${{ fromJson(inputs.arch) }}
     steps:
 
       # ------------------------------------------------------------
