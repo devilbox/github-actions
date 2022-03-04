@@ -224,7 +224,7 @@ jobs:
       - name: "[SETUP] Determine manifest arches"
         id: manifest
         run: |
-          ARCHES="$( echo ${{ inputs.matrix }} \
+          ARCHES="$( echo '${{ inputs.matrix }}' \
             | jq 'group_by(.NAME, .VERSION, .ARCH)' \
             | jq 'map({NAME: .[].NAME, VERSION: .[].VERSION[], ARCHES: .[].ARCH|join(",")})' \
             | jq '.[] | select(.NAME=="${{ matrix.name }}" and .VERSION=="${{ matrix.version }}") | .ARCHES' \
@@ -243,7 +243,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: "[DEPLOY] Create Docker manifest"
+      - name: "[DEPLOY] Create Docker manifest for architectures: ${{ steps.manifest.outputs.arches }}"
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
