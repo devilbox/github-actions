@@ -1,0 +1,25 @@
+name: Lint
+
+on:
+  workflow_call:
+
+jobs:
+
+  # -----------------------------------------------------------------------------------------------
+  # JOB (1/1): Lint
+  # -----------------------------------------------------------------------------------------------
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "[SETUP] Checkout repository"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Lint
+        uses: cytopia/shell-command-retry-action@v0.1.2
+        with:
+          command: |
+            make lint
