@@ -6,10 +6,6 @@ on:
     ### Variables
     ###
     inputs:
-      name:
-        description: 'Name of the service to build (used for job names only).'
-        required: true
-        type: string
       enabled:
         description: 'Determines wheather this workflow is enabled at all (will run or skip).'
         required: true
@@ -100,7 +96,6 @@ jobs:
       - name: "[DEBUG] Workflow Inputs"
         shell: bash
         run: |
-          echo 'name: ${{ inputs.name }} '
           echo 'enabled: ${{ inputs.enabled }} '
           echo 'can_deploy: ${{ inputs.can_deploy }} '
           echo 'matrix: ${{ inputs.matrix }} '
