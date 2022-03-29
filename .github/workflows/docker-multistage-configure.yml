@@ -154,7 +154,7 @@ jobs:
 
       - name: "[Set-Output] has_refs and matrix (ref-matrix) (branches and latest tags)"
         id: set-refs
-        uses: cytopia/git-ref-matrix-action@v0.1.9
+        uses: cytopia/git-ref-matrix-action@v0.1.10
         with:
           repository_default_branch: ${{ steps.eval-refs.outputs.default_branch }}
           branches: ${{ steps.eval-refs.outputs.branches }}
@@ -198,7 +198,7 @@ jobs:
             )"
             echo "::set-output name=matrix_build::${MATRIX_BUILD}"
             echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::1"
+            echo "::set-output name=has_refs::true"
           else
             MATRIX_BUILD="$( \
               jq -M -c \
@@ -210,7 +210,7 @@ jobs:
             )"
             echo "::set-output name=matrix_build::${MATRIX_BUILD}"
             echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::0"
+            echo "::set-output name=has_refs::false"
           fi
 
       # ------------------------------------------------------------
