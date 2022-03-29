@@ -56,14 +56,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-        if: !inputs.has_refs
+        if: ${{ !inputs.has_refs }}
 
       - name: "[SETUP] Checkout repository (ref: ${{ matrix.refs }})"
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ matrix.refs }}
-        if: inputs.has_refs
+        if: ${{ inputs.has_refs }}
 
       - name: "[SETUP] Setup QEMU environment"
         uses: docker/setup-qemu-action@v1
