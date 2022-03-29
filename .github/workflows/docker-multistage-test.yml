@@ -1,5 +1,5 @@
 ---
-name: Test multi-arch images
+name: "Test multistage docker images (multi -flavours, -versions, -architectures)"
 
 on:
   workflow_call:
