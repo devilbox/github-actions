@@ -11,14 +11,6 @@ on:
         description: 'The build matrix'
         required: true
         type: string
-      has_refs:
-        description: 'The ref build matrix as JSON string (list of git refs to build/deploy).'
-        required: true
-        type: string
-      artifact_prefix:
-        description: 'Unique artifact name prefix (to avoid overriding existing artifcats during parallel runs).'
-        required: true
-        type: string
       flavour:
         description: 'The flavour to build (Examples: base, mods, prod or work).'
         required: true
@@ -27,6 +19,14 @@ on:
         description: 'The previous flavour (used for downloading previous artifact).'
         required: true
         type: string
+      artifact_prefix:
+        description: 'Unique artifact name prefix (to avoid overriding existing artifcats during parallel runs).'
+        required: true
+        type: string
+      has_refs:
+        description: 'The ref build matrix as JSON string (list of git refs to build/deploy).'
+        required: true
+        type: boolean
       run_tests:
         description: 'Dertermines whether we run integration tests or not.'
         required: true
@@ -56,14 +56,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-        if: inputs.has_refs == 0
+        if: !inputs.has_refs
 
       - name: "[SETUP] Checkout repository (ref: ${{ matrix.refs }})"
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ matrix.refs }}
-        if: inputs.has_refs != 0
+        if: inputs.has_refs
 
       - name: "[SETUP] Setup QEMU environment"
         uses: docker/setup-qemu-action@v1

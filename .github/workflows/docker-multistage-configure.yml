@@ -3,11 +3,18 @@ name: "Configure multistage docker images (multi -flavours, -versions, -architec
 
 on:
   workflow_call:
-
     ###
     ### Input Variables
     ###
     inputs:
+      versions:
+        description: 'The JSON string for versions. ( list of objects: [{NAME, VERSION[], ARCH[]}] )'
+        required: true
+        type: string
+      refs:
+        description: 'The JSON string for refs. ( object: {BRANCH, NUM_LATEST_TAGS} )'
+        required: true
+        type: string
       enabled:
         description: 'Determines whether this workflow is enabled at all (will run or skip).'
         required: true
@@ -20,14 +27,6 @@ on:
         description: "Usage for a scheduled job? Only then we will evaluate git refs and add them to build matrix."
         required: true
         type: boolean
-      versions:
-        description: 'The JSON string for versions. ( list of objects: [{NAME, VERSION[], ARCH[]}] )'
-        required: true
-        type: string
-      refs:
-        description: 'The JSON string for refs. ( object: {BRANCH, NUM_LATEST_TAGS} )'
-        required: true
-        type: string
 
     ###
     ### Input Secrets
@@ -46,30 +45,30 @@ on:
     outputs:
       # Repeat input variables
       versions:
-        description: "Copied from inputs: The JSON string for versions."
+        description: "(string) Copied from inputs: The JSON string for versions."
         value: ${{ jobs.configure.outputs.versions }}
       refs:
-        description: "Copied from inputs: The JSON string for refs."
+        description: "(string) Copied from inputs: The JSON string for refs."
         value: ${{ jobs.configure.outputs.refs }}
       # Determined settings (flags)
       can_login:
-        description: "Can we login to Dockerhub?"
+        description: "(boolean) Can we login to Dockerhub?"
         value: ${{ jobs.configure.outputs.can_login }}
       can_push:
-        description: "Can we push to Dockerhub?"
+        description: "(boolean) Can we push to Dockerhub?"
         value: ${{ jobs.configure.outputs.can_push }}
       has_refs:
-        description: "Do we have refs? (used for nightly builds)"
+        description: "(boolean) Do we have refs? (used for nightly builds)"
         value: ${{ jobs.configure.outputs.has_refs }}
       # Determined settings (values)
       matrix_build:
-        description: "The determined build matrix"
+        description: "(string) The determined JSON string build matrix."
         value: ${{ jobs.configure.outputs.matrix_build }}
       matrix_deploy:
-        description: "The determined deploy matrix"
+        description: "(string) The determined JSON string deploy matrix."
         value: ${{ jobs.configure.outputs.matrix_deploy }}
       artifact_prefix:
-        description: "The determined unique artifact prefix"
+        description: "(string) The determined unique artifact prefix."
         value: ${{ jobs.configure.outputs.artifact_prefix }}
 
 jobs:
@@ -115,9 +114,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ env.ENV_USER }}" = '' ] || [ "${{ env.ENV_PASS }}" = '' ]; then
-            echo "::set-output name=can_login::0"
+            echo "::set-output name=can_login::false"
           else
-            echo "::set-output name=can_login::1"
+            echo "::set-output name=can_login::true"
           fi
         env:
           ENV_USER: ${{ secrets.dockerhub_username }}
@@ -130,10 +129,10 @@ jobs:
         id: set-push
         shell: bash
         run: |
-          if [ "${{ steps.set-login.outputs.can_login }}" = "1" ] && [ "${{ inputs.can_deploy }}" = "1" ]; then
-            echo "::set-output name=can_push::1"
+          if [ "${{ steps.set-login.outputs.can_login }}" = "true" ] && [ "${{ inputs.can_deploy }}" = "true" ]; then
+            echo "::set-output name=can_push::true"
           else
-            echo "::set-output name=can_push::0"
+            echo "::set-output name=can_push::false"
           fi
 
       ###
@@ -155,7 +154,7 @@ jobs:
 
       - name: "[Set-Output] has_refs and matrix (ref-matrix) (branches and latest tags)"
         id: set-refs
-        uses: cytopia/git-ref-matrix-action@v0.1.8
+        uses: cytopia/git-ref-matrix-action@v0.1.9
         with:
           repository_default_branch: ${{ steps.eval-refs.outputs.default_branch }}
           branches: ${{ steps.eval-refs.outputs.branches }}
@@ -186,7 +185,7 @@ jobs:
         id: set-matrix
         shell: bash
         run: |
-          if [ "${{ steps.set-refs.outputs.has_refs }}" = "1" ]; then
+          if [ "${{ steps.set-refs.outputs.has_refs }}" = "true" ]; then
             MATRIX_BUILD="$( \
               jq -M -c \
                 --argjson refs '${{ steps.set-refs.outputs.matrix }}' \
