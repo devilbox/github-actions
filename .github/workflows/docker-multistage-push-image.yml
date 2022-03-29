@@ -11,8 +11,8 @@ on:
         description: 'The build matrix'
         required: true
         type: string
-      flavour:
-        description: 'The flavour to build (Examples: base, mods, prod or work).'
+      stage:
+        description: 'The stage to build (Examples: base, mods, prod or work).'
         required: true
         type: string
       artifact_prefix:
@@ -43,7 +43,7 @@ jobs:
   # JOB: DEPLOY
   # -----------------------------------------------------------------------------------------------
   test:
-    name: ${{ matrix.name }}-${{ matrix.version }}-${{ inputs.flavour }} (${{ matrix.arch }}) ${{ matrix.refs }}
+    name: ${{ matrix.name }}-${{ matrix.version }}-${{ inputs.stage }} (${{ matrix.arch }}) ${{ matrix.refs }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -84,7 +84,7 @@ jobs:
           VERSION="${{ matrix.version }}"
           ARCH="$( echo "${{ matrix.arch }}" | sed 's|/|-|g' )"
 
-          NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.flavour }}"
+          NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
           echo "::set-output name=curr::${NAME_CURR}"
 
 
@@ -118,7 +118,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make tag VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make tag VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
 
       - name: "[Docker Tag] Show images"
         run: |
@@ -143,5 +143,5 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make push VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make push VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
         if: ${{ inputs.can_deploy }}
