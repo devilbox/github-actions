@@ -1,5 +1,5 @@
 ---
-name: Build multi-arch images
+name: "Build multistage docker images (multi -flavours, -versions, -architectures)"
 
 on:
   workflow_call:

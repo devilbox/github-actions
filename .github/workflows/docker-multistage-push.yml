@@ -1,5 +1,5 @@
 ---
-name: "Test multistage docker images (multi -flavours, -versions, -architectures)"
+name: "Push multistage docker images (multi -flavours, -versions, -architectures)"
 
 on:
   workflow_call:
@@ -7,6 +7,10 @@ on:
     ### Variables
     ###
     inputs:
+      can_deploy:
+        description: 'Determines wheather this workflow will also deploy (login and push).'
+        required: true
+        type: boolean
       matrix:
         description: 'The build matrix'
         required: true
@@ -23,10 +27,20 @@ on:
         description: 'The flavour to build (Examples: base, mods, prod or work).'
         required: true
         type: string
+    ###
+    ### Secrets
+    ###
+    secrets:
+      dockerhub_username:
+        description: 'The username for Dockerhub.'
+        required: true
+      dockerhub_password:
+        description: 'The password for Dockerhub.'
+        required: true
 
 jobs:
   # -----------------------------------------------------------------------------------------------
-  # JOB: BUILD
+  # JOB: DEPLOY
   # -----------------------------------------------------------------------------------------------
   test:
     name: ${{ matrix.name }}-${{ matrix.version }}-${{ inputs.flavour }} (${{ matrix.arch }}) ${{ matrix.refs }}
@@ -58,6 +72,10 @@ jobs:
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
+
+      - name: "[SETUP] Determine Docker tag"
+        id: tag
+        uses: cytopia/docker-tag-action@v0.4.15
 
       - name: "[SETUP] Set artifact names"
         id: set-artifact-name
@@ -94,10 +112,36 @@ jobs:
 
 
       # ------------------------------------------------------------
-      # Test
+      # Re-tag images
       # ------------------------------------------------------------
-      - name: Test
+      - name: "[Docker Tag] Retag"
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make test VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} ARCH=${{ matrix.arch }}
+            make tag VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
+
+      - name: "[Docker Tag] Show images"
+        run: |
+          docker images
+
+
+      # ------------------------------------------------------------
+      # Login
+      # ------------------------------------------------------------
+      - name: Login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        if: ${{ inputs.can_deploy }}
+
+
+      # ------------------------------------------------------------
+      # Push images
+      # ------------------------------------------------------------
+      - name: Push Image
+        uses: cytopia/shell-command-retry-action@v0.1.2
+        with:
+          command: |
+            make push VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
+        if: ${{ inputs.can_deploy }}

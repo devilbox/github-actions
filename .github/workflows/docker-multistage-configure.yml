@@ -1,5 +1,5 @@
 ---
-name: "Configure Pipeline for multistage docker images (multi -flavours, -versions, -architectures)"
+name: "Configure multistage docker images (multi -flavours, -versions, -architectures)"
 
 on:
   workflow_call:
