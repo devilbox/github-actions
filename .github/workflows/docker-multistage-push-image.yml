@@ -20,7 +20,7 @@ on:
         required: true
         type: string
       can_deploy:
-        description: 'Determines wheather this workflow will also deploy (login and push).'
+        description: 'Determines whether this workflow will also deploy (login and push).'
         required: true
         type: boolean
       has_refs:

@@ -7,11 +7,11 @@ on:
     ###
     inputs:
       enabled:
-        description: 'Determines wheather this workflow is enabled at all (will run or skip).'
+        description: 'Determines whether this workflow is enabled at all (will run or skip).'
         required: true
         type: boolean
       can_deploy:
-        description: 'Determines wheather this workflow will also deploy (login and push).'
+        description: 'Determines whether this workflow will also deploy (login and push).'
         required: true
         type: boolean
       matrix:

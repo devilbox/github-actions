@@ -18,12 +18,8 @@ on:
         description: 'The flavour to build (Examples: base, mods, prod or work).'
         required: true
         type: string
-      enabled:
-        description: 'Determines wheather this workflow is enabled at all (will run or skip).'
-        required: true
-        type: boolean
       can_deploy:
-        description: 'Determines wheather this workflow will also deploy (login and push).'
+        description: 'Determines whether this workflow will also deploy (login and push).'
         required: true
         type: boolean
       has_refs:
@@ -53,7 +49,7 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
-    if: inputs.enabled && inputs.can_deploy
+    if: inputs.can_deploy
     steps:
       # ------------------------------------------------------------
       # Setup repository
