@@ -11,12 +11,12 @@ on:
         description: 'The build matrix'
         required: true
         type: string
-      flavour:
-        description: 'The flavour to build (Examples: base, mods, prod or work).'
+      stage:
+        description: 'The stage to build (Examples: base, mods, prod or work).'
         required: true
         type: string
-      flavour_prev:
-        description: 'The previous flavour (used for downloading previous artifact).'
+      stage_prev:
+        description: 'The previous stage (used for downloading previous artifact).'
         required: true
         type: string
       artifact_prefix:
@@ -41,7 +41,7 @@ jobs:
   # JOB: BUILD
   # -----------------------------------------------------------------------------------------------
   build:
-    name: ${{ matrix.name }}-${{ matrix.version }}-${{ inputs.flavour }} (${{ matrix.arch }}) ${{ matrix.refs }}
+    name: ${{ matrix.name }}-${{ matrix.version }}-${{ inputs.stage }} (${{ matrix.arch }}) ${{ matrix.refs }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -78,8 +78,8 @@ jobs:
           VERSION="${{ matrix.version }}"
           ARCH="$( echo "${{ matrix.arch }}" | sed 's|/|-|g' )"
 
-          NAME_PREV="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.flavour_prev }}"
-          NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.flavour }}"
+          NAME_PREV="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage_prev }}"
+          NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
           echo "::set-output name=prev::${NAME_PREV}"
           echo "::set-output name=curr::${NAME_CURR}"
 
@@ -99,14 +99,14 @@ jobs:
             name: ${{ steps.set-artifact-name.outputs.prev }}
           attempt_limit: 20
           attempt_delay: 10000
-        if: ${{ inputs.flavour_prev != '' }}
+        if: ${{ inputs.stage_prev != '' }}
 
       - name: "[Artifact Load] Import previously built image"
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
             make load INFILE=${{ steps.set-artifact-name.outputs.prev }}
-        if: ${{ inputs.flavour_prev != '' }}
+        if: ${{ inputs.stage_prev != '' }}
 
 
       # ------------------------------------------------------------
@@ -116,7 +116,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make build VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} ARCH=${{ matrix.arch }}
+            make build VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }}
 
 
       # ------------------------------------------------------------
@@ -126,7 +126,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make test VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} ARCH=${{ matrix.arch }}
+            make test VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }}
         if: ${{ inputs.run_tests }}
 
 
@@ -141,7 +141,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make save-verify VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} ARCH=${{ matrix.arch }} OUTFILE=${{ steps.set-artifact-name.outputs.curr }} INFILE=${{ steps.set-artifact-name.outputs.curr }}
+            make save-verify VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} OUTFILE=${{ steps.set-artifact-name.outputs.curr }} INFILE=${{ steps.set-artifact-name.outputs.curr }}
         if: ${{ inputs.upload_artifact }}
 
       ###

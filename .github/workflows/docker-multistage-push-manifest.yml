@@ -14,8 +14,8 @@ on:
         description: 'The build matrix set via params.yml.'
         required: true
         type: string
-      flavour:
-        description: 'The flavour to build (Examples: base, mods, prod or work).'
+      stage:
+        description: 'The stage to build (Examples: base, mods, prod or work).'
         required: true
         type: string
       can_deploy:
@@ -43,7 +43,7 @@ jobs:
   # JOB (3/3): DEPLOY
   # -----------------------------------------------------------------------------------------------
   deploy:
-    name: ${{ matrix.name }}-${{ matrix.version }} (${{ matrix.flavour }}) ${{ matrix.refs }}
+    name: ${{ matrix.name }}-${{ matrix.version }}-${{ inputs.stage }} ${{ matrix.refs }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -107,7 +107,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make manifest-create VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} ARCHES=${{ steps.manifest.outputs.arches }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make manifest-create VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCHES=${{ steps.manifest.outputs.arches }} TAG=${{ steps.tag.outputs.docker-tag }}
 
 
       # ------------------------------------------------------------
@@ -117,4 +117,4 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.2
         with:
           command: |
-            make manifest-push VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make manifest-push VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
