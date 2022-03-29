@@ -1,0 +1,124 @@
+name: Deploy multi-arch image manifests
+
+on:
+  workflow_call:
+    ###
+    ### Variables
+    ###
+    inputs:
+      matrix:
+        description: 'The version deploy matrix as JSON string ( list of objects: [{NAME, VERSION[], ARCH[]}] ).'
+        required: true
+        type: string
+      versions:
+        description: 'The build matrix set via params.yml.'
+        required: true
+        type: string
+      flavour:
+        description: 'The flavour to build (Examples: base, mods, prod or work).'
+        required: true
+        type: string
+      enabled:
+        description: 'Determines wheather this workflow is enabled at all (will run or skip).'
+        required: true
+        type: boolean
+      can_deploy:
+        description: 'Determines wheather this workflow will also deploy (login and push).'
+        required: true
+        type: boolean
+      has_refs:
+        description: 'The ref build matrix as JSON string (list of git refs to build/deploy).'
+        required: true
+        type: boolean
+
+    ###
+    ### Secrets
+    ###
+    secrets:
+      dockerhub_username:
+        description: 'The username for Dockerhub.'
+        required: false
+      dockerhub_password:
+        description: 'The password for Dockerhub.'
+        required: false
+
+jobs:
+  # -----------------------------------------------------------------------------------------------
+  # JOB (3/3): DEPLOY
+  # -----------------------------------------------------------------------------------------------
+  deploy:
+    name: ${{ matrix.name }}-${{ matrix.version }} (${{ matrix.flavour }}) ${{ matrix.refs }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    if: inputs.enabled && inputs.can_deploy
+    steps:
+      # ------------------------------------------------------------
+      # Setup repository
+      # ------------------------------------------------------------
+      - name: "[SETUP] Checkout repository (current)"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+        if: !inputs.has_refs
+
+      - name: "[SETUP] Checkout repository (ref: ${{ matrix.refs }})"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ matrix.refs }}
+        if: inputs.has_refs
+
+      - name: "[SETUP] Setup QEMU environment"
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+
+      - name: "[SETUP] Determine Docker tag"
+        id: tag
+        uses: cytopia/docker-tag-action@v0.4.15
+
+      - name: "[SETUP] Determine manifest arches"
+        id: manifest
+        run: |
+          ARCHES="$( echo '${{ inputs.versions }}' \
+            | jq 'group_by(.NAME, .VERSION, .ARCH)' \
+            | jq 'map({NAME: .[].NAME, VERSION: .[].VERSION[], FLAVOUR: .[].FLAVOUR[], ARCHES: .[].ARCH|join(",")})' \
+            | jq '.[] | select(.NAME=="${{ matrix.name }}" and .VERSION=="${{ matrix.version }}" and .FLAVOUR=="${{ matrix.flavour }}") | .ARCHES' \
+            | jq -c -M \
+          )"
+          echo "::set-output name=arches::${ARCHES}"
+          echo "ARCHES: ${ARCHES}"
+
+
+      # ------------------------------------------------------------
+      # Login
+      # ------------------------------------------------------------
+      - name: "Login"
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+
+      # ------------------------------------------------------------
+      # Create Manifest
+      # ------------------------------------------------------------
+      - name: "[Create Manifest] (${{ steps.manifest.outputs.arches }})"
+        uses: cytopia/shell-command-retry-action@v0.1.2
+        with:
+          command: |
+            make manifest-create VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} ARCHES=${{ steps.manifest.outputs.arches }} TAG=${{ steps.tag.outputs.docker-tag }}
+
+
+      # ------------------------------------------------------------
+      # Deploy Manifest
+      # ------------------------------------------------------------
+      - name: "[Push Manifest] ${{ steps.tag.outputs.docker-tag }}"
+        uses: cytopia/shell-command-retry-action@v0.1.2
+        with:
+          command: |
+            make manifest-push VERSION=${{ matrix.version }} FLAVOUR=${{ inputs.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
