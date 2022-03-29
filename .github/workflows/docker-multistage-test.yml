@@ -23,10 +23,6 @@ on:
         description: 'The flavour to build (Examples: base, mods, prod or work).'
         required: true
         type: string
-      flavour_prev:
-        description: 'The previous flavour (used for downloading previous artifact).'
-        required: true
-        type: string
 
 jobs:
   # -----------------------------------------------------------------------------------------------
