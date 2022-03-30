@@ -217,6 +217,29 @@ jobs:
       # Debug
       # ------------------------------------------------------------
 
+      - name: "[DEBUG] Show GitHub Context"
+        shell: bash
+        run: |
+          echo 'Context                              | Value'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.actor                         | ${{ github.actor }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.repository_owner              | ${{ github.repository_owner }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.event.pull_request.user.login | ${{ github.event.pull_request.user.login }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.event_name                    | ${{ github.event_name }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.ref_name                      | ${{ github.ref_name }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.head_ref                      | ${{ github.head_ref }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.base_ref                      | ${{ github.base_ref }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.ref_type                      | ${{ github.ref_type }}'
+          echo '-------------------------------------|-----------------------------------'
+          echo 'github.repository                    | ${{ github.repository }}'
+
       - name: "[DEBUG] Show Workflow Inputs"
         shell: bash
         run: |
