@@ -92,7 +92,7 @@ jobs:
       ### Download and import previously built image (if it exists)
       ###
       - name: "[Artifact Load] Download previously built image"
-        uses: Wandalen/wretry.action@v1.0.11
+        uses: Wandalen/wretry.action@v1.0.12
         with:
           action: actions/download-artifact@v3
           with: |
@@ -148,7 +148,7 @@ jobs:
       ### Upload current image
       ###
       - name: "[Artifact Save] Upload currently built image"
-        uses: Wandalen/wretry.action@v1.0.11
+        uses: Wandalen/wretry.action@v1.0.12
         with:
           action: actions/upload-artifact@v3
           with: |
