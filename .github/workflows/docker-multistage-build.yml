@@ -168,3 +168,10 @@ jobs:
           name: ${{ steps.set-artifact-name.outputs.curr }}
           path: ${{ steps.set-artifact-name.outputs.curr }}.tmp
         if: ${{ inputs.upload_artifact }}
+
+      - name: "[Artifact Save] Import (verify)"
+        uses: cytopia/shell-command-retry-action@v0.1.3
+        with:
+          command: |
+            make load INFILE=${{ steps.set-artifact-name.outputs.curr }}.tmp
+        if: ${{ inputs.upload_artifact }}
