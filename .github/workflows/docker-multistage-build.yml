@@ -173,5 +173,5 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.3
         with:
           command: |
-            make load INFILE=${{ steps.set-artifact-name.outputs.curr }}.tmp
+            make load INFILE=${{ steps.set-artifact-name.outputs.curr }}.tmp/${{ steps.set-artifact-name.outputs.curr }}
         if: ${{ inputs.upload_artifact }}
