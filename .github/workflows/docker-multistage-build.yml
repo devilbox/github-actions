@@ -94,7 +94,7 @@ jobs:
       - name: "[Artifact Load] Download previously built image"
         uses: Wandalen/wretry.action@v1.0.12
         with:
-          action: actions/download-artifact@v3
+          action: actions/download-artifact@v2
           with: |
             name: ${{ steps.set-artifact-name.outputs.prev }}
           attempt_limit: 20
@@ -150,7 +150,7 @@ jobs:
       - name: "[Artifact Save] Upload currently built image"
         uses: Wandalen/wretry.action@v1.0.12
         with:
-          action: actions/upload-artifact@v3
+          action: actions/upload-artifact@v2
           with: |
             name: ${{ steps.set-artifact-name.outputs.curr }}
             path: ${{ steps.set-artifact-name.outputs.curr }}
@@ -163,7 +163,7 @@ jobs:
       ### Verify uploaded image
       ###
       - name: "[Artifact Save] Download (verify)"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2
         with:
           name: ${{ steps.set-artifact-name.outputs.curr }}
           path: ${{ steps.set-artifact-name.outputs.curr }}.tmp
