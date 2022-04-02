@@ -137,41 +137,40 @@ jobs:
       ###
       ### Export current image
       ###
-      - name: "[Artifact Save] Export currently built image"
-        uses: cytopia/shell-command-retry-action@v0.1.3
-        with:
-          command: |
-            make save-verify VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} OUTFILE=${{ steps.set-artifact-name.outputs.curr }} INFILE=${{ steps.set-artifact-name.outputs.curr }}
-        if: ${{ inputs.upload_artifact }}
-
-      ###
-      ### Upload current image
-      ###
-      - name: "[Artifact Save] Upload currently built image"
-        uses: Wandalen/wretry.action@v1.0.12
-        with:
-          action: actions/upload-artifact@v2
-          with: |
-            name: ${{ steps.set-artifact-name.outputs.curr }}
-            path: ${{ steps.set-artifact-name.outputs.curr }}
-            if-no-files-found: error
-          attempt_limit: 20
-          attempt_delay: 10000
-        if: ${{ inputs.upload_artifact }}
-
-      ###
-      ### Verify uploaded image
-      ###
-      - name: "[Artifact Save] Download (verify)"
-        uses: actions/download-artifact@v2
+      - name: "[Artifact Save] (try-1)"
+        id: upload-1
+        uses: cytopia/upload-artifact-verify-action@v0.1.3
+        continue-on-error: true
         with:
           name: ${{ steps.set-artifact-name.outputs.curr }}
-          path: ${{ steps.set-artifact-name.outputs.curr }}.tmp
+          path: ${{ steps.set-artifact-name.outputs.curr }}
+          pre_command: |
+            make save-verify VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} OUTFILE=${{ steps.set-artifact-name.outputs.curr }} INFILE=${{ steps.set-artifact-name.outputs.curr }}
+          post_command: |
+            make load INFILE={{download_path}}
         if: ${{ inputs.upload_artifact }}
 
-      - name: "[Artifact Save] Import (verify)"
-        uses: cytopia/shell-command-retry-action@v0.1.3
+      - name: "[Artifact Save] (try-2)"
+        id: upload-2
+        uses: cytopia/upload-artifact-verify-action@v0.1.3
+        continue-on-error: true
         with:
-          command: |
-            make load INFILE=${{ steps.set-artifact-name.outputs.curr }}.tmp/${{ steps.set-artifact-name.outputs.curr }}
-        if: ${{ inputs.upload_artifact }}
+          name: ${{ steps.set-artifact-name.outputs.curr }}
+          path: ${{ steps.set-artifact-name.outputs.curr }}
+          pre_command: |
+            make save-verify VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} OUTFILE=${{ steps.set-artifact-name.outputs.curr }} INFILE=${{ steps.set-artifact-name.outputs.curr }}
+          post_command: |
+            make load INFILE={{download_path}}
+        if: ${{ inputs.upload_artifact && steps.upload-1.outcome == 'failure' }}
+
+      - name: "[Artifact Save] (try-3)"
+        id: upload-3
+        uses: cytopia/upload-artifact-verify-action@v0.1.3
+        with:
+          name: ${{ steps.set-artifact-name.outputs.curr }}
+          path: ${{ steps.set-artifact-name.outputs.curr }}
+          pre_command: |
+            make save-verify VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} OUTFILE=${{ steps.set-artifact-name.outputs.curr }} INFILE=${{ steps.set-artifact-name.outputs.curr }}
+          post_command: |
+            make load INFILE={{download_path}}
+        if: ${{ inputs.upload_artifact && steps.upload-2.outcome == 'failure' }}
