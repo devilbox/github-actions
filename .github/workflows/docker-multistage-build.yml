@@ -74,7 +74,7 @@ jobs:
 
       - name: "[SETUP] Install Docker Buildx"
         id: buildx
-        uses: buluma/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v1
 
       - name: "[SETUP] Set artifact names"
         id: set-artifact-name
@@ -91,8 +91,12 @@ jobs:
       - name: "[DEBUG] Show setup"
         shell: bash
         run: |
-          echo 'buildx platforms: ${{ steps.buildx.outputs.platforms }}'
-          echo 'qemu platforms:   ${{ steps.qemu.outputs.platforms }}'
+          echo '(qemu)   Platforms: ${{ steps.qemu.outputs.platforms }}'
+          echo "(buildx) Name:      ${{ steps.buildx.outputs.name }}"
+          echo "(buildx) Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "(buildx) Status:    ${{ steps.buildx.outputs.status }}"
+          echo "(buildx) Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "(buildx) Platforms: ${{ steps.buildx.outputs.platforms }}"
 
 
       # ------------------------------------------------------------
