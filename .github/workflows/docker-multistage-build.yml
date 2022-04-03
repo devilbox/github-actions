@@ -65,11 +65,16 @@ jobs:
           ref: ${{ matrix.refs }}
         if: ${{ inputs.has_refs }}
 
-      - name: "[SETUP] Setup QEMU environment"
+      - name: "[SETUP] Install QEMU environment"
         uses: docker/setup-qemu-action@v1
+        id: qemu
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
+
+      - name: "[SETUP] Install Docker Buildx"
+        id: buildx
+        uses: buluma/setup-buildx-action@v1
 
       - name: "[SETUP] Set artifact names"
         id: set-artifact-name
@@ -82,6 +87,12 @@ jobs:
           NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
           echo "::set-output name=prev::${NAME_PREV}"
           echo "::set-output name=curr::${NAME_CURR}"
+
+      - name: "[DEBUG] Show setup"
+        shell: bash
+        run: |
+          echo 'buildx platforms: ${{ steps.buildx.outputs.platforms }}'
+          echo 'qemu platforms:   ${{ steps.qemu.outputs.platforms }}'
 
 
       # ------------------------------------------------------------
