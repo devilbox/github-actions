@@ -96,7 +96,7 @@ jobs:
       ### Download and import previously built image
       ###
       - name: "[Artifact Load] Download previously built image"
-        uses: Wandalen/wretry.action@v1.0.12
+        uses: Wandalen/wretry.action@v1.0.15
         with:
           action: actions/download-artifact@v2
           with: |
