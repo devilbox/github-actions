@@ -78,13 +78,9 @@ jobs:
       ### Download and import previously built image
       ###
       - name: "[Artifact Load] Download previously built image"
-        uses: Wandalen/wretry.action@v1.0.12
+        uses: cytopia/download-artifact-retry-action@v0.1.0
         with:
-          action: actions/download-artifact@v2
-          with: |
-            name: ${{ steps.set-artifact-name.outputs.curr }}
-          attempt_limit: 20
-          attempt_delay: 10000
+          name: ${{ steps.set-artifact-name.outputs.curr }}
 
       - name: "[Artifact Load] Import previously built image"
         uses: cytopia/shell-command-retry-action@v0.1.3
