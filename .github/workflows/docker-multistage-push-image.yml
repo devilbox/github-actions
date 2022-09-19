@@ -75,7 +75,7 @@ jobs:
 
       - name: "[SETUP] Determine Docker tag"
         id: tag
-        uses: cytopia/docker-tag-action@v0.4.15
+        uses: cytopia/docker-tag-action@v0.4.17
 
       - name: "[SETUP] Set artifact names"
         id: set-artifact-name
