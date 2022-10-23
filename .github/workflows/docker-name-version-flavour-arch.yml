@@ -151,6 +151,12 @@ jobs:
       # ------------------------------------------------------------
       # Build
       # ------------------------------------------------------------
+      - name: Pull Base
+        uses: cytopia/shell-command-retry-action@v0.1.3
+        with:
+          command: |
+            make docker-pull-base-image ARCH=${{ matrix.arch }}
+
       - name: Build
         uses: cytopia/shell-command-retry-action@v0.1.3
         with:
