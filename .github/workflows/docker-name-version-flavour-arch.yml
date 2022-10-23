@@ -53,9 +53,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ env.ENV_USER }}" = '' ] || [ "${{ env.ENV_PASS }}" = '' ]; then
-            echo "::set-output name=can_login::0"
+            echo "can_login=0" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=can_login::1"
+            echo "can_login=1" >> $GITHUB_OUTPUT
           fi
         env:
           ENV_USER: ${{ secrets.dockerhub_username }}
@@ -76,9 +76,9 @@ jobs:
                 --argjson refs   '${{ inputs.refs }}' \
                 'map({name:.NAME, version:.VERSION[], flavour:.FLAVOUR[], refs:$refs[]})' <<<'${{ inputs.matrix }}' \
             )"
-            echo "::set-output name=matrix_build::${MATRIX_BUILD}"
-            echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::1"
+            echo "matrix_build=${MATRIX_BUILD}"   >> $GITHUB_OUTPUT
+            echo "matrix_deploy=${MATRIX_DEPLOY}" >> $GITHUB_OUTPUT
+            echo "has_refs=1" >> $GITHUB_OUTPUT
           else
             MATRIX_BUILD="$( \
               jq -M -c \
@@ -88,9 +88,9 @@ jobs:
               jq -M -c \
                 'map({name:.NAME, version:.VERSION[], flavour:.FLAVOUR[]})' <<<'${{ inputs.matrix }}' \
             )"
-            echo "::set-output name=matrix_build::${MATRIX_BUILD}"
-            echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::0"
+            echo "matrix_build=${MATRIX_BUILD}"   >> $GITHUB_OUTPUT
+            echo "matrix_deploy=${MATRIX_DEPLOY}" >> $GITHUB_OUTPUT
+            echo "has_refs=0" >> $GITHUB_OUTPUT
           fi
 
       - name: "[DEBUG] Workflow Inputs"
@@ -225,7 +225,7 @@ jobs:
             | jq '.[] | select(.NAME=="${{ matrix.name }}" and .VERSION=="${{ matrix.version }}" and .FLAVOUR=="${{ matrix.flavour }}") | .ARCHES' \
             | jq -c -M \
           )"
-          echo "::set-output name=arches::${ARCHES}"
+          echo "arches=${ARCHES}" >> $GITHUB_OUTPUT
           echo "ARCHES: ${ARCHES}"
 
 
