@@ -23,6 +23,16 @@ on:
         description: 'Unique artifact name prefix (to avoid overriding existing artifcats during parallel runs).'
         required: true
         type: string
+      artifact_prev_name_add_version:
+        description: 'Add version to artifact name to download.'
+        required: false
+        default: true
+        type: boolean
+      artifact_curr_name_add_version:
+        description: 'Add version to artifact name to upload.'
+        required: false
+        default: true
+        type: boolean
       has_refs:
         description: 'The ref build matrix as JSON string (list of git refs to build/deploy).'
         required: true
@@ -88,8 +98,16 @@ jobs:
           VERSION="${{ matrix.version }}"
           ARCH="$( echo "${{ matrix.arch }}" | sed 's|/|-|g' )"
 
-          NAME_PREV="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage_prev }}"
-          NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
+          if [ "${{ inputs.artifact_prev_name_add_version }}" = "true" ]; then
+            NAME_PREV="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage_prev }}"
+          else
+            NAME_PREV="${{ inputs.artifact_prefix }}-${PRE_HASH}-${ARCH}-${{ inputs.stage_prev }}"
+          fi
+          if [ "${{ inputs.artifact_curr_name_add_version }}" = "true" ]; then
+            NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
+          else
+            NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${ARCH}-${{ inputs.stage }}"
+          fi
           echo "::set-output name=prev::${NAME_PREV}"
           echo "::set-output name=curr::${NAME_CURR}"
 
