@@ -163,7 +163,7 @@ jobs:
           retries: 10
           pause: 5
           command: |
-            make build NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make rebuild NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
 
       # ------------------------------------------------------------
       # Test
