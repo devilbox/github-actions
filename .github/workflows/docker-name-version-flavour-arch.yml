@@ -152,7 +152,7 @@ jobs:
       - name: "[SETUP] Fix Docker IP forwarding"
         run: |
           sysctl net.ipv4.ip_forward
-          sysctl -w net.ipv4.ip_forward=1
+          sudo sysctl -w net.ipv4.ip_forward=1
           sudo systemctl restart docker
 
       # ------------------------------------------------------------
