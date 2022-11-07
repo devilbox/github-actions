@@ -148,6 +148,13 @@ jobs:
         id: tag
         uses: cytopia/docker-tag-action@v0.4.20
 
+      # https://github.com/alpinelinux/docker-alpine/issues/98
+      - name: "[SETUP] Fix Docker IP forwarding"
+        run: |
+          sysctl net.ipv4.ip_forward
+          sysctl -w net.ipv4.ip_forward=1
+          sudo systemctl restart docker
+
       # ------------------------------------------------------------
       # Build
       # ------------------------------------------------------------
