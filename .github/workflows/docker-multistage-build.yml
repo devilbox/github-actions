@@ -90,8 +90,8 @@ jobs:
 
           NAME_PREV="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage_prev }}"
           NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
-          echo "prev::${NAME_PREV}" >> $GITHUB_OUTPUT
-          echo "curr::${NAME_CURR}" >> $GITHUB_OUTPUT
+          echo "prev=${NAME_PREV}" >> $GITHUB_OUTPUT
+          echo "curr=${NAME_CURR}" >> $GITHUB_OUTPUT
 
       - name: "[DEBUG] Show setup"
         shell: bash
