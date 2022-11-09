@@ -254,7 +254,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: "[DEPLOY] Create Docker manifest for architectures: ${{ steps.manifest.outputs.arches }}"
-        uses: cytopia/shell-command-retry-action@v0.1.
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make manifest-create NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" FLAVOUR=${{ matrix.flavour }} ARCHES=${{ steps.manifest.outputs.arches }} TAG=${{ steps.tag.outputs.docker-tag }}
