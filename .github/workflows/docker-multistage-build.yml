@@ -118,7 +118,7 @@ jobs:
         if: ${{ inputs.stage_prev != '' }}
 
       - name: "[Artifact Load] Import previously built image"
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make load INFILE=${{ steps.set-artifact-name.outputs.prev }}
@@ -129,14 +129,14 @@ jobs:
       # Build
       # ------------------------------------------------------------
       - name: Pull
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make docker-pull-base-image VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }}
         if: ${{ inputs.pull_base_image }}
 
       - name: Build
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make build VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }}
@@ -146,7 +146,7 @@ jobs:
       # Test
       # ------------------------------------------------------------
       - name: Test
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make test VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }}
