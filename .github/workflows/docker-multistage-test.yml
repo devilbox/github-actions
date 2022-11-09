@@ -67,7 +67,7 @@ jobs:
           ARCH="$( echo "${{ matrix.arch }}" | sed 's|/|-|g' )"
 
           NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
-          echo "::set-output name=curr::${NAME_CURR}"
+          echo "curr=${NAME_CURR}" >> $GITHUB_OUTPUT
 
 
       # ------------------------------------------------------------
