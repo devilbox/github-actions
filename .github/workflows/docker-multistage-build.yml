@@ -112,7 +112,7 @@ jobs:
       ### Download and import previously built image (if it exists)
       ###
       - name: "[Artifact Load] Download previously built image"
-        uses: cytopia/download-artifact-retry-action@v0.1.1
+        uses: cytopia/download-artifact-retry-action@v0.1.3
         with:
           name: ${{ steps.set-artifact-name.outputs.prev }}
         if: ${{ inputs.stage_prev != '' }}
