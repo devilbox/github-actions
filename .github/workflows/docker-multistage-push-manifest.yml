@@ -86,7 +86,7 @@ jobs:
             | jq '.[] | select(.NAME=="${{ matrix.name }}" and .VERSION=="${{ matrix.version }}" and .FLAVOUR=="${{ matrix.flavour }}") | .ARCHES' \
             | jq -c -M \
           )"
-          echo "::set-output name=arches::${ARCHES}"
+          echo "arches=${ARCHES}" >> $GITHUB_OUTPUT
           echo "ARCHES: ${ARCHES}"
 
 
