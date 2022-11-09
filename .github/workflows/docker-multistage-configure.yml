@@ -114,9 +114,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ env.ENV_USER }}" = '' ] || [ "${{ env.ENV_PASS }}" = '' ]; then
-            echo "::set-output name=can_login::false"
+            echo "can_login=false" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=can_login::true"
+            echo "can_login=true" >> $GITHUB_OUTPUT
           fi
         env:
           ENV_USER: ${{ secrets.dockerhub_username }}
@@ -130,9 +130,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.set-login.outputs.can_login }}" = "true" ] && [ "${{ inputs.can_deploy }}" = "true" ]; then
-            echo "::set-output name=can_push::true"
+            echo "can_push=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=can_push::false"
+            echo "can_push=false" >> $GITHUB_OUTPUT
           fi
 
       ###
@@ -145,9 +145,11 @@ jobs:
           DEFAULT_BRANCH="$( echo '${{ inputs.refs }}' | jq -M -c -r '.DEFAULT_BRANCH' )"
           BRANCHES="$( echo '${{ inputs.refs }}' | jq -M -c -r '.BRANCHES' )"
           NUM_LATEST_TAGS="$( echo '${{ inputs.refs }}' | jq -M -c -r '.NUM_LATEST_TAGS' )"
-          echo "::set-output name=default_branch::${DEFAULT_BRANCH}"
-          echo "::set-output name=branches::${BRANCHES}"
-          echo "::set-output name=num_latest_tags::${NUM_LATEST_TAGS}"
+
+          echo "default_branch=${DEFAULT_BRANCH}"   >> $GITHUB_OUTPUT
+          echo "branches=${BRANCHES}"               >> $GITHUB_OUTPUT
+          echo "num_latest_tags=${NUM_LATEST_TAGS}" >> $GITHUB_OUTPUT
+
           echo "DEFAULT_BRANCH=${DEFAULT_BRANCH}"
           echo "BRANCHES=${BRANCHES}"
           echo "NUM_LATEST_TAGS=${NUM_LATEST_TAGS}"
@@ -176,7 +178,7 @@ jobs:
         run: |
           PRE_DATE="$( date +"%s" )"
           PRE_RAND="$( echo $RANDOM | md5sum | head -c 10 )"
-          echo "::set-output name=prefix::${PRE_DATE}-${PRE_RAND}"
+          echo "prefix=${PRE_DATE}-${PRE_RAND}" >> $GITHUB_OUTPUT
 
       ###
       ### Set Build and Deploy Matrix
@@ -196,9 +198,9 @@ jobs:
                 --argjson refs '${{ steps.set-refs.outputs.matrix }}' \
                 'map({name:.NAME, version:.VERSION[], flavour:.FLAVOUR[], refs:$refs[]})' <<<'${{ inputs.versions }}' \
             )"
-            echo "::set-output name=matrix_build::${MATRIX_BUILD}"
-            echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::true"
+            echo "matrix_build=${MATRIX_BUILD}"   >> $GITHUB_OUTPUT
+            echo "matrix_deploy=${MATRIX_DEPLOY}" >> $GITHUB_OUTPUT
+            echo "has_refs=true"                  >> $GITHUB_OUTPUT
           else
             MATRIX_BUILD="$( \
               jq -M -c \
@@ -208,9 +210,9 @@ jobs:
               jq -M -c \
                 'map({name:.NAME, version:.VERSION[], flavour:.FLAVOUR[]})' <<<'${{ inputs.versions }}' \
             )"
-            echo "::set-output name=matrix_build::${MATRIX_BUILD}"
-            echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::false"
+            echo "matrix_build=${MATRIX_BUILD}"   >> $GITHUB_OUTPUT
+            echo "matrix_deploy=${MATRIX_DEPLOY}" >> $GITHUB_OUTPUT
+            echo "has_refs=false"                 >> $GITHUB_OUTPUT
           fi
 
       # ------------------------------------------------------------
