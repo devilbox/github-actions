@@ -75,7 +75,7 @@ jobs:
 
       - name: "[SETUP] Determine Docker tag"
         id: tag
-        uses: cytopia/docker-tag-action@v0.4.20
+        uses: cytopia/docker-tag-action@v0.4.22
 
       - name: "[SETUP] Determine manifest arches"
         id: manifest
@@ -104,7 +104,7 @@ jobs:
       # Create Manifest
       # ------------------------------------------------------------
       - name: "[Create Manifest] (${{ steps.manifest.outputs.arches }})"
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make manifest-create VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCHES=${{ steps.manifest.outputs.arches }} TAG=${{ steps.tag.outputs.docker-tag }}
@@ -114,7 +114,7 @@ jobs:
       # Deploy Manifest
       # ------------------------------------------------------------
       - name: "[Push Manifest] ${{ steps.tag.outputs.docker-tag }}"
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make manifest-push VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}

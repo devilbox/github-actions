@@ -75,7 +75,7 @@ jobs:
 
       - name: "[SETUP] Determine Docker tag"
         id: tag
-        uses: cytopia/docker-tag-action@v0.4.20
+        uses: cytopia/docker-tag-action@v0.4.22
 
       - name: "[SETUP] Set artifact names"
         id: set-artifact-name
@@ -96,12 +96,12 @@ jobs:
       ### Download and import previously built image
       ###
       - name: "[Artifact Load] Download previously built image"
-        uses: cytopia/download-artifact-retry-action@v0.1.0
+        uses: cytopia/download-artifact-retry-action@v0.1.1
         with:
           name: ${{ steps.set-artifact-name.outputs.curr }}
 
       - name: "[Artifact Load] Import previously built image"
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make load INFILE=${{ steps.set-artifact-name.outputs.curr }}
@@ -111,7 +111,7 @@ jobs:
       # Re-tag images
       # ------------------------------------------------------------
       - name: "[Docker Tag] Retag"
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make tag VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
@@ -136,7 +136,7 @@ jobs:
       # Push images
       # ------------------------------------------------------------
       - name: Push Image
-        uses: cytopia/shell-command-retry-action@v0.1.3
+        uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
             make push VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
