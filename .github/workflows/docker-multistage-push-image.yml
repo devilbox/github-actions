@@ -43,7 +43,7 @@ jobs:
   # JOB: DEPLOY
   # -----------------------------------------------------------------------------------------------
   deploy:
-    name: ${{ matrix.name }}-${{ matrix.version }}-${{ inputs.stage }} (${{ matrix.arch }}) ${{ matrix.refs }}
+    name: ${{ matrix.NAME }}-${{ matrix.VERSION }}-${{ inputs.stage }} (${{ matrix.ARCH }}) ${{ matrix.REFS }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -60,11 +60,11 @@ jobs:
           fetch-depth: 0
         if: ${{ !inputs.has_refs }}
 
-      - name: "[SETUP] Checkout repository (ref: ${{ matrix.refs }})"
+      - name: "[SETUP] Checkout repository (ref: ${{ matrix.REFS }})"
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          ref: ${{ matrix.refs }}
+          ref: ${{ matrix.REFS }}
         if: ${{ inputs.has_refs }}
 
       - name: "[SETUP] Setup QEMU environment"
@@ -81,8 +81,8 @@ jobs:
         id: set-artifact-name
         run: |
           PRE_HASH="$( git rev-parse HEAD | head -c 10 )"
-          VERSION="${{ matrix.version }}"
-          ARCH="$( echo "${{ matrix.arch }}" | sed 's|/|-|g' )"
+          VERSION="${{ matrix.VERSION }}"
+          ARCH="$( echo "${{ matrix.ARCH }}" | sed 's|/|-|g' )"
 
           NAME_CURR="${{ inputs.artifact_prefix }}-${PRE_HASH}-${VERSION}-${ARCH}-${{ inputs.stage }}"
           echo "curr=${NAME_CURR}" >> $GITHUB_OUTPUT
@@ -114,7 +114,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
-            make tag VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make tag VERSION=${{ matrix.VERSION }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.FLAVOUR }} TAG=${{ steps.tag.outputs.docker-tag }}
 
       - name: "[Docker Tag] Show images"
         run: |
@@ -139,5 +139,5 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.5
         with:
           command: |
-            make push VERSION=${{ matrix.version }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.flavour }} ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make push VERSION=${{ matrix.VERSION }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.FLAVOUR }} ARCH=${{ matrix.ARCH }} TAG=${{ steps.tag.outputs.docker-tag }}
         if: ${{ inputs.can_deploy }}
