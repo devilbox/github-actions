@@ -51,10 +51,10 @@ on:
     secrets:
       dockerhub_username:
         description: 'The username for Dockerhub.'
-        required: true
+        required: false
       dockerhub_password:
         description: 'The password for Dockerhub.'
-        required: true
+        required: false
 
 jobs:
   # -----------------------------------------------------------------------------------------------
