@@ -53,9 +53,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ env.ENV_USER }}" = '' ] || [ "${{ env.ENV_PASS }}" = '' ]; then
-            echo "::set-output name=can_login::0"
+            echo "can_login=0" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=can_login::1"
+            echo "can_login=1" >> $GITHUB_OUTPUT
           fi
         env:
           ENV_USER: ${{ secrets.dockerhub_username }}
@@ -76,9 +76,9 @@ jobs:
                 --argjson refs   '${{ inputs.refs }}' \
                 'map({name:.NAME, version:.VERSION[], refs:$refs[]})' <<<'${{ inputs.matrix }}' \
             )"
-            echo "::set-output name=matrix_build::${MATRIX_BUILD}"
-            echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::1"
+            echo "matrix_build=${MATRIX_BUILD}"   >> $GITHUB_OUTPUT
+            echo "matrix_deploy=${MATRIX_DEPLOY}" >> $GITHUB_OUTPUT
+            echo "has_refs=1" >> $GITHUB_OUTPUT
           else
             MATRIX_BUILD="$( \
               jq -M -c \
@@ -88,9 +88,9 @@ jobs:
               jq -M -c \
                 'map({name:.NAME, version:.VERSION[]})' <<<'${{ inputs.matrix }}' \
             )"
-            echo "::set-output name=matrix_build::${MATRIX_BUILD}"
-            echo "::set-output name=matrix_deploy::${MATRIX_DEPLOY}"
-            echo "::set-output name=has_refs::0"
+            echo "matrix_build=${MATRIX_BUILD}"   >> $GITHUB_OUTPUT
+            echo "matrix_deploy=${MATRIX_DEPLOY}" >> $GITHUB_OUTPUT
+            echo "has_refs=0" >> $GITHUB_OUTPUT
           fi
 
       - name: "[DEBUG] Workflow Inputs"
@@ -148,14 +148,29 @@ jobs:
         id: tag
         uses: cytopia/docker-tag-action@v0.4.22
 
+      # https://github.com/alpinelinux/docker-alpine/issues/98
+      - name: "[SETUP] Fix Docker IP forwarding"
+        run: |
+          sysctl net.ipv4.ip_forward
+          sudo sysctl -w net.ipv4.ip_forward=1
+          sudo systemctl restart docker
+
       # ------------------------------------------------------------
       # Build
       # ------------------------------------------------------------
-      - name: Build
+      - name: Pull Base
         uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
-            make build NAME=${{ matrix.name }} VERSION=${{ matrix.version }} ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make docker-pull-base-image VERSION="${{ matrix.version }}" ARCH=${{ matrix.arch }}
+
+      - name: Build
+        uses: cytopia/shell-command-retry-action@v0.1.6
+        with:
+          retries: 10
+          pause: 5
+          command: |
+            make build NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
 
       # ------------------------------------------------------------
       # Test
@@ -164,7 +179,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
-            make test NAME=${{ matrix.name }} VERSION=${{ matrix.version }} ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make test NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
 
       # ------------------------------------------------------------
       # Deploy
@@ -180,7 +195,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
-            make push NAME=${{ matrix.name }} VERSION=${{ matrix.version }} ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make push NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" ARCH=${{ matrix.arch }} TAG=${{ steps.tag.outputs.docker-tag }}
         if: needs.configure.outputs.can_login == 1 && inputs.can_deploy
 
   # -----------------------------------------------------------------------------------------------
@@ -225,7 +240,7 @@ jobs:
             | jq '.[] | select(.NAME=="${{ matrix.name }}" and .VERSION=="${{ matrix.version }}") | .ARCHES' \
             | jq -c -M \
           )"
-          echo "::set-output name=arches::${ARCHES}"
+          echo "arches=${ARCHES}" >> $GITHUB_OUTPUT
           echo "ARCHES: ${ARCHES}"
 
 
@@ -242,10 +257,10 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
-            make manifest-create NAME=${{ matrix.name }} VERSION=${{ matrix.version }} ARCHES=${{ steps.manifest.outputs.arches }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make manifest-create NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" ARCHES=${{ steps.manifest.outputs.arches }} TAG=${{ steps.tag.outputs.docker-tag }}
 
       - name: "[DEPLOY] Publish Docker manifest: ${{ steps.tag.outputs.docker-tag }}"
         uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
-            make manifest-push NAME=${{ matrix.name }} VERSION=${{ matrix.version }} TAG=${{ steps.tag.outputs.docker-tag }}
+            make manifest-push NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" TAG=${{ steps.tag.outputs.docker-tag }}
