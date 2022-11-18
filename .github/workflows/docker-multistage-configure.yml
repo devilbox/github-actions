@@ -32,7 +32,7 @@ on:
         description: 'The JSON string for deploy fields to extract'
         required: false
         type: string
-        default: '[{"VERSION":"VERSION"}, {"FLAVOUR":"FLAVOUR"}, {"HELM":"EXTRA"}]'
+        default: '[{"VERSION":"VERSION"}, {"FLAVOUR":"FLAVOUR"}'
 
     ###
     ### Input Secrets
