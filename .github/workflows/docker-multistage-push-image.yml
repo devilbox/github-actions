@@ -101,7 +101,7 @@ jobs:
           name: ${{ steps.set-artifact-name.outputs.curr }}
 
       - name: "[Artifact Load] Import previously built image"
-        uses: cytopia/shell-command-retry-action@v0.1.5
+        uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
             make load INFILE=${{ steps.set-artifact-name.outputs.curr }}
@@ -111,7 +111,7 @@ jobs:
       # Re-tag images
       # ------------------------------------------------------------
       - name: "[Docker Tag] Retag"
-        uses: cytopia/shell-command-retry-action@v0.1.5
+        uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
             make tag VERSION=${{ matrix.VERSION }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.FLAVOUR }} TAG=${{ steps.tag.outputs.docker-tag }}
@@ -136,7 +136,7 @@ jobs:
       # Push images
       # ------------------------------------------------------------
       - name: Push Image
-        uses: cytopia/shell-command-retry-action@v0.1.5
+        uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
             make push VERSION=${{ matrix.VERSION }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.FLAVOUR }} ARCH=${{ matrix.ARCH }} TAG=${{ steps.tag.outputs.docker-tag }}

@@ -83,7 +83,7 @@ jobs:
           name: ${{ steps.set-artifact-name.outputs.curr }}
 
       - name: "[Artifact Load] Import previously built image"
-        uses: cytopia/shell-command-retry-action@v0.1.5
+        uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
             make load INFILE=${{ steps.set-artifact-name.outputs.curr }}
@@ -93,7 +93,7 @@ jobs:
       # Test
       # ------------------------------------------------------------
       - name: Test
-        uses: cytopia/shell-command-retry-action@v0.1.5
+        uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
             make test VERSION=${{ matrix.VERSION }} STAGE=${{ inputs.stage }} FLAVOUR=${{ matrix.FLAVOUR }} ARCH=${{ matrix.ARCH }}
