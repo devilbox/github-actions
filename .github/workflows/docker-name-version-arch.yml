@@ -162,7 +162,7 @@ jobs:
         uses: cytopia/shell-command-retry-action@v0.1.6
         with:
           command: |
-            make docker-pull-base-image VERSION="${{ matrix.version }}" ARCH=${{ matrix.arch }}
+            make docker-pull-base-image NAME=${{ matrix.name }} VERSION="${{ matrix.version }}" ARCH=${{ matrix.arch }}
 
       - name: Build
         uses: cytopia/shell-command-retry-action@v0.1.6
