@@ -126,13 +126,13 @@ jobs:
       # Setup repository
       # ------------------------------------------------------------
       - name: "[SETUP] Checkout repository (current)"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
         if: needs.configure.outputs.has_refs == 0
 
       - name: "[SETUP] Checkout repository (ref: ${{ matrix.refs }})"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ matrix.refs }}
@@ -215,13 +215,13 @@ jobs:
       # Setup repository
       # ------------------------------------------------------------
       - name: "[SETUP] Checkout repository (current)"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
         if: needs.configure.outputs.has_refs == 0
 
       - name: "[SETUP] Checkout repository (ref: ${{ matrix.refs }})"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ matrix.refs }}
