@@ -170,7 +170,7 @@ jobs:
       ###
       - name: "[Set-Output] has_refs and ref-matrix"
         id: set-refs
-        uses: cytopia/git-ref-matrix-action@v0.1.14
+        uses: cytopia/git-ref-matrix-action@v0.1.15
         with:
           repository_default_branch: ${{ steps.eval-refs.outputs.default_branch }}
           branches: ${{ steps.eval-refs.outputs.branches }}
